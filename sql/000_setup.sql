@@ -1,6 +1,6 @@
--- 00_setup.sql
+-- 000_setup.sql
 -- Run ONCE, as superuser, with psql (not PyCharm, because \c is psql-only):
---   psql -h localhost -d postgres -f sql/00_setup.sql
+--   psql -h localhost -d postgres -f sql/000_setup.sql
 -- Then set the password interactively:  \password mikhail
 
 CREATE ROLE mikhail LOGIN;
