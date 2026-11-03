@@ -1,7 +1,7 @@
 -- 02_load_raw.sql
 -- Loads all downloaded sample years into raw.orig / raw.perf.
 -- Uses \copy, so it must run through psql, FROM THE REPO ROOT:
---   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/02_load_raw.sql
+--   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/00_load/02_load_raw.sql
 -- QUOTE E'\b' switches off quote handling, so a stray " inside a field can't break the load.
 -- The vintage of each loan is encoded in loan_seq_no (e.g. F22Q1... = 2022 Q1), so no source column is needed.
 

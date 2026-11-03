@@ -10,7 +10,7 @@
 --   non-numeric net_sale_proceeds -> NULL
 -- Safe to rerun: drops and rebuilds both tables. Requires 01 and 02 to have run.
 -- Run from the repo root:
---   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/03_core_tables.sql
+--   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/00_load/03_core_tables.sql
 
 DROP TABLE IF EXISTS core.perf;
 DROP TABLE IF EXISTS core.orig;

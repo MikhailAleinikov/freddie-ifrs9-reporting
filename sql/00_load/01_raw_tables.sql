@@ -3,7 +3,7 @@
 -- Column order follows the SFLLD General User Guide (Release 48).
 -- Verify the field counts against the official file layout before loading:
 --   origination = 31 columns, performance = 35 columns.
--- Run:  psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/01_raw_tables.sql
+-- Run:  psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/00_load/01_raw_tables.sql
 
 DROP TABLE IF EXISTS raw.orig;
 CREATE TABLE raw.orig (
