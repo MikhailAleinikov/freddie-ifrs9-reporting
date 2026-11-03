@@ -1,8 +1,6 @@
--- 03_core_tables.sql
--- Builds typed, cleaned tables in core from the raw staging tables.
---   raw.orig -> core.orig  (one row per loan, PK loan_seq_no)
+-- 11_stg_performance.sql
 --   raw.perf -> core.perf  (one row per loan per month, PK loan_seq_no + period, FK to core.orig)
--- Cleaning rules:
+--   Cleaning rules:
 --   sentinel codes (9999, 999, 99, 9, 7, 000) -> NULL
 --   YYYYMM text -> DATE (first of month)
 --   Y/N flags -> BOOLEAN; Y/NULL flags kept as TEXT
@@ -10,108 +8,9 @@
 --   non-numeric net_sale_proceeds -> NULL
 -- Safe to rerun: drops and rebuilds both tables. Requires 01 and 02 to have run.
 -- Run from the repo root:
---   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/00_load/03_core_tables.sql
+--   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/10_staging/10_stg_performance.sql
 
 DROP TABLE IF EXISTS core.perf;
-DROP TABLE IF EXISTS core.orig;
-
-CREATE TABLE core.orig(
-    credit_score INTEGER,
-    first_payment_date DATE,
-    first_time_homebuyer BOOLEAN,
-    maturity_date DATE,
-    msa TEXT,
-    mi_pct INTEGER,
-    num_units INTEGER,
-    occupancy_status TEXT,
-    orig_cltv INTEGER,
-    orig_dti INTEGER,
-    orig_upb NUMERIC(14,2),
-    orig_ltv INTEGER,
-    orig_interest_rate NUMERIC(6,3),
-    channel TEXT,
-    ppm_flag BOOLEAN,
-    amortization_type TEXT,
-    property_state TEXT,
-    property_type TEXT,
-    postal_code TEXT,
-    loan_seq_no TEXT PRIMARY KEY,
-    loan_purpose TEXT,
-    orig_loan_term INTEGER,
-    num_borrowers INTEGER,
-    seller_name TEXT,
-    super_conforming_flag BOOLEAN,
-    pre_harp_loan_seq_no TEXT,
-    program_indicator TEXT,
-    harp_indicator BOOLEAN,
-    valuation_method INTEGER,
-    io_indicator BOOLEAN,
-    vantagescore4 INTEGER
-);
-INSERT INTO core.orig (credit_score,
-                       first_payment_date,
-                       first_time_homebuyer,
-                       maturity_date,
-                       msa,
-                       mi_pct,
-                       num_units,
-                       occupancy_status,
-                       orig_cltv,
-                       orig_dti,
-                       orig_upb,
-                       orig_ltv,
-                       orig_interest_rate,
-                       channel,
-                       ppm_flag,
-                       amortization_type,
-                       property_state,
-                       property_type,
-                       postal_code,
-                       loan_seq_no,
-                       loan_purpose,
-                       orig_loan_term,
-                       num_borrowers,
-                       seller_name,
-                       super_conforming_flag,
-                       pre_harp_loan_seq_no,
-                       program_indicator,
-                       harp_indicator,
-                       valuation_method,
-                       io_indicator,
-                       vantagescore4)
-SELECT NULLIF(credit_score, '9999')::int,
-       to_date(first_payment_date, 'YYYYMM'),
-       CASE first_time_homebuyer WHEN 'Y' THEN true WHEN 'N' THEN false END,
-       to_date(maturity_date, 'YYYYMM'),
-       msa,
-       NULLIF(mi_pct, '999')::int,
-       NULLIF(num_units, '99')::int,
-       NULLIF(occupancy_status, '9'),
-       NULLIF(orig_cltv, '999')::int,
-       NULLIF(orig_dti, '999')::int,
-       orig_upb::numeric(14,2),
-       NULLIF(orig_ltv, '999')::int,
-       orig_interest_rate::numeric(6,3),
-       NULLIF(channel, '9'),
-       CASE ppm_flag WHEN 'Y' THEN true WHEN 'N' THEN false END,
-       amortization_type,
-       property_state,
-       NULLIF(property_type, '99'),
-       postal_code,
-       loan_seq_no,
-       NULLIF(loan_purpose, '9'),
-       orig_loan_term::int,
-       NULLIF(num_borrowers, '99')::int,
-       seller_name,
-       CASE super_conforming_flag WHEN 'Y' THEN true WHEN 'N' THEN false END,
-       pre_harp_loan_seq_no,
-       program_indicator,
-       CASE harp_indicator WHEN 'Y' THEN true WHEN 'N' THEN false END,
-       NULLIF(valuation_method, '7')::int,
-       CASE io_indicator WHEN 'Y' THEN true WHEN 'N' THEN false END,
-       NULLIF(vantagescore4, '9999')::int
-FROM raw.orig;
-
 CREATE TABLE core.perf (
     loan_seq_no                 TEXT NOT NULL REFERENCES core.orig (loan_seq_no),
     period                      DATE NOT NULL,
@@ -201,8 +100,5 @@ SELECT
     trim(servicer_name),
     bankruptcy_cramdown_costs::numeric(14,2)
 FROM raw.perf;
-
 CREATE INDEX perf_period_idx ON core.perf (period);
-
-ANALYZE core.orig;
 ANALYZE core.perf;
