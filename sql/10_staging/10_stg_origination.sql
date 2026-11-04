@@ -8,8 +8,9 @@
 -- Safe to rerun: drops and rebuilds the table. Requires 01 and 02 to have run.
 -- Run from the repo root:
 --   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/10_staging/10_stg_origination.sql
+-- in case of rerunning it is essential to rerun 11_stg_performance.sql as well
 
-DROP TABLE IF EXISTS core.orig;
+DROP TABLE IF EXISTS core.orig CASCADE;
 
 CREATE TABLE core.orig(
     credit_score INTEGER,
