@@ -93,12 +93,12 @@ SELECT NULLIF(credit_score, '9999')::int,
        amortization_type,
        property_state,
        NULLIF(property_type, '99'),
-       postal_code,
+       NULLIF(postal_code, '000'),
        loan_seq_no,
        NULLIF(loan_purpose, '9'),
        orig_loan_term::int,
        NULLIF(num_borrowers, '99')::int,
-       seller_name,
+       TRIM(seller_name),
        CASE super_conforming_flag WHEN 'Y' THEN true WHEN 'N' THEN false END,
        pre_harp_loan_seq_no,
        program_indicator,
@@ -107,4 +107,9 @@ SELECT NULLIF(credit_score, '9999')::int,
        CASE io_indicator WHEN 'Y' THEN true WHEN 'N' THEN false END,
        NULLIF(vantagescore4, '9999')::int
 FROM raw.orig;
+ALTER TABLE core.orig
+    ADD COLUMN vintage INTEGER GENERATED ALWAYS AS (
+            ('20' || substring(loan_seq_no, 2, 2))::int
+        ) STORED;
+
 ANALYZE core.orig;
