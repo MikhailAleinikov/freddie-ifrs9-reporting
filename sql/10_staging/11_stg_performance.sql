@@ -100,5 +100,33 @@ SELECT
     trim(servicer_name),
     bankruptcy_cramdown_costs::numeric(14,2)
 FROM raw.perf;
+
+ALTER TABLE core.perf
+    ADD COLUMN is_reo_acq BOOLEAN GENERATED ALWAYS AS (
+        COALESCE(delinquency_status = 'RA', false)
+    ) STORED,
+    ADD COLUMN dpd_bucket TEXT GENERATED ALWAYS AS (
+        CASE
+            WHEN delinquency_status = 'RA' THEN 'REO'
+            WHEN delinquency_status IS NULL
+              OR delinquency_status !~ '^\d+$' THEN NULL
+            WHEN delinquency_status::int = 0 THEN '0-29'
+            WHEN delinquency_status::int = 1 THEN '30-59'
+            WHEN delinquency_status::int = 2 THEN '60-89'
+            ELSE '90+'
+        END
+    ) STORED,
+    ADD COLUMN is_credit_event_zb BOOLEAN GENERATED ALWAYS AS (
+        COALESCE(zero_balance_code IN ('02','03','09','15'), false)
+    ) STORED,
+    ADD COLUMN is_defect BOOLEAN GENERATED ALWAYS AS (
+        COALESCE(zero_balance_code = '96', false)
+        OR defect_settlement_date IS NOT NULL
+    ) STORED,
+    ADD COLUMN is_forbearance BOOLEAN GENERATED ALWAYS AS (
+        COALESCE(borrower_assistance_plan = 'F', false)
+        OR COALESCE(disaster_flag = 'Y', false)
+    ) STORED;
+
 CREATE INDEX perf_period_idx ON core.perf (period);
 ANALYZE core.perf;
