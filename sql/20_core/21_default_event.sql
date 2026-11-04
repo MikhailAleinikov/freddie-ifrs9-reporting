@@ -11,7 +11,7 @@ CREATE TABLE core.default_event AS
         CASE WHEN is_credit_event_zb THEN 'ZB_'||zero_balance_code
             WHEN is_reo_acq THEN 'REO'
             WHEN delinquency_months >= 3 THEN 'DPD90'
-            END AS defaul_trigger,
+            END AS default_trigger,
         delinquency_months,
         is_reo_acq,
         is_credit_event_zb,
