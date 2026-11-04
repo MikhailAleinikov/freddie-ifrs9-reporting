@@ -35,8 +35,11 @@ CREATE TABLE core.snapshot AS
         loan_seq_no,
         q.snapshot_date,
         o.vintage,
-        (extract(year  FROM age(lm.period, o.first_payment_date)) * 12
-       + extract(month FROM age(lm.period, o.first_payment_date)))::int AS months_on_books,
+        CASE WHEN (extract(year  FROM age(lm.period, o.first_payment_date)) * 12
+         + extract(month FROM age(lm.period, o.first_payment_date)))::int + 1 >= 0
+            THEN (extract(year  FROM age(lm.period, o.first_payment_date)) * 12
+         + extract(month FROM age(lm.period, o.first_payment_date)))::int + 1
+            END AS months_on_books,
         current_upb AS ead,
         lm.delinquency_months,
         dpd_bucket,
