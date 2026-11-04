@@ -6,7 +6,7 @@
 --   Y/N flags -> BOOLEAN; Y/NULL flags kept as TEXT
 --   delinquency_status kept as text; delinquency_months derived (RA, XX -> NULL)
 --   non-numeric net_sale_proceeds -> NULL
--- Safe to rerun: drops and rebuilds both tables. Requires 01 and 02 to have run.
+-- Safe to rerun: drops and rebuilds the table. Requires 01 and 02 to have run.
 -- Run from the repo root:
 --   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/10_staging/11_stg_performance.sql
 

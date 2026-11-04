@@ -5,7 +5,7 @@
 --   sentinel codes (9999, 999, 99, 9, 7, 000) -> NULL
 --   YYYYMM text -> DATE (first of month)
 --   Y/N flags -> BOOLEAN; Y/NULL flags kept as TEXT
--- Safe to rerun: drops and rebuilds both tables. Requires 01 and 02 to have run.
+-- Safe to rerun: drops and rebuilds the table. Requires 01 and 02 to have run.
 -- Run from the repo root:
 --   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/10_staging/10_stg_origination.sql
 
