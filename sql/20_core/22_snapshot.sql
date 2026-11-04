@@ -56,6 +56,7 @@ CREATE TABLE core.snapshot AS
         o.channel,
         o.num_borrowers,
         o.first_time_homebuyer,
+        o.orig_interest_rate,
         COALESCE(de.default_date <= q.snapshot_date, false) AS has_defaulted,
         COALESCE(default_date > snapshot_date AND
                  default_date <= snapshot_date + interval'12 months', false) AS defaults_next_12m,
@@ -73,4 +74,4 @@ CREATE TABLE core.snapshot AS
 ALTER TABLE core.snapshot
     ADD PRIMARY KEY (loan_seq_no, snapshot_date);
 CREATE INDEX snapshot_date_idx ON core.snapshot (snapshot_date);
-ANALYSE core.snapshot
+ANALYSE core.snapshot;
