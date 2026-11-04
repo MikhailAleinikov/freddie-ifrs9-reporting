@@ -28,7 +28,8 @@ SELECT
   -- current LTV: ELTV if available, otherwise recomputed
     COALESCE(p.eltv,
            round(p.current_upb * o.orig_ltv / NULLIF(o.orig_upb, 0)))
-                                                            AS current_ltv
+                                                            AS current_ltv,
+    BOOL_OR(p.is_defect) OVER (PARTITION BY p.loan_seq_no) AS loan_has_defect
 
 
 FROM core.perf p
