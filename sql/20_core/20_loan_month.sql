@@ -3,7 +3,7 @@
 -- Run from the repo root:
 --   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/20_core/20_loan_month.sql
 
-
+DROP TABLE IF EXISTS core.loan_month CASCADE;
 CREATE TABLE core.loan_month AS
 SELECT
     p.*,
