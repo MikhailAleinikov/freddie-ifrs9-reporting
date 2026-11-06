@@ -28,8 +28,7 @@ INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_mis
 
 -- ===== origination: numeric =====
 -- 620 = subprime line, 740+ = top pricing tier
-('credit_score', 0, 'missing',  NULL, NULL, NULL, true),
-('credit_score', 1, '<620',     NULL, 620,  NULL, false),
+('credit_score', 1, '<620 or missing', NULL, 620, NULL, true),
 ('credit_score', 2, '620-659',  620,  660,  NULL, false),
 ('credit_score', 3, '660-699',  660,  700,  NULL, false),
 ('credit_score', 4, '700-739',  700,  740,  NULL, false),
