@@ -2,12 +2,12 @@
 -- Fine/coarse classing results: goods, bads, WoE and IV per (feature, bin), computed on TRAIN only.
 -- Bin cut points come from mart.bin_def (hand-maintained decisions); this file only computes results.
 -- Method: aggregate first (one scan with GROUPING SETS -> per-value counts), bin second (small join).
--- Features excluded on purpose:
---   vintage                -> encodes "crisis or not", does not generalise
---   orig_interest_rate     -> replaced by sato (rate minus median rate of the same origination quarter)
---   months_since_last_90   -> always NULL in the PD sample (ever-90+ loans have has_defaulted = true)
---   delinquency_months     -> duplicate of dpd_bucket
--- Depends on: mart.pd_sample, mart.bin_def, core.orig
+-- Scorecard candidates: credit_score, orig_ltv, orig_dti, sato, num_borrowers, delinq_history,
+--                       loan_purpose, channel, property_state
+-- Excluded (reasons in docs/assumptions.md): vintage, orig_interest_rate (-> sato), current_ltv,
+--   months_on_books, dpd_bucket, max_delinq_12m, months_since_last_del (-> delinq_history), ead,
+--   occupancy_status, first_time_homebuyer, is_forbearance, ever_modified, ever_deferred
+-- Depends on: mart.pd_sample, mart.bin_def
 -- Run from the repo root:
 --   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/30_risk/32_binning.sql
 
@@ -16,84 +16,54 @@ SET work_mem = '256MB';
 -- 1. Per-value counts on TRAIN, unpivoted to long format (a few thousand rows)
 DROP TABLE IF EXISTS pg_temp.binning_long;
 CREATE TEMP TABLE binning_long AS
-WITH orig_q AS (
-    SELECT substring(loan_seq_no FROM 2 FOR 4)                          AS orig_qtr,
-           percentile_cont(0.5) WITHIN GROUP (ORDER BY orig_interest_rate) AS median_rate
-    FROM core.orig
-    GROUP BY 1
-),
-base AS (
+WITH base AS (
     SELECT ps.credit_score,
            ps.orig_ltv,
-           ps.current_ltv,
            ps.orig_dti,
-           round((ps.orig_interest_rate - q.median_rate)::numeric, 2)  AS sato,
-           ps.months_on_books,
-           ps.delinq_history,
-           round(ps.ead::numeric, -3)                                   AS ead_k,
+           ps.sato,
            ps.num_borrowers,
-           ps.occupancy_status,
+           ps.delinq_history,
            ps.loan_purpose,
            ps.channel,
            ps.property_state,
-           ps.first_time_homebuyer,
-           ps.is_forbearance,
-           ps.ever_modified,
-           ps.ever_deferred,
            ps.target
     FROM mart.pd_sample ps
-    JOIN orig_q q ON q.orig_qtr = substring(ps.loan_seq_no FROM 2 FOR 4)
     WHERE ps.sample_split = 'TRAIN'
 ),
 agg AS (
     SELECT
-        credit_score, orig_ltv, current_ltv, orig_dti, sato, months_on_books,
-         ead_k, num_borrowers,
-         occupancy_status, loan_purpose, channel, property_state,
-        first_time_homebuyer, is_forbearance, ever_modified, ever_deferred,
-        GROUPING(credit_score)          AS g_credit_score,
-        GROUPING(orig_ltv)              AS g_orig_ltv,
-        GROUPING(orig_dti)              AS g_orig_dti,
-        GROUPING(sato)                  AS g_sato,
-        GROUPING(delinq_history) AS delinq_history,
-        GROUPING(ead_k)                 AS g_ead,
-        GROUPING(num_borrowers)         AS g_num_borrowers,
-        GROUPING(occupancy_status)      AS g_occupancy_status,
-        GROUPING(loan_purpose)          AS g_loan_purpose,
-        GROUPING(channel)               AS g_channel,
-        GROUPING(property_state)        AS g_property_state,
-        GROUPING(first_time_homebuyer)  AS g_first_time_homebuyer,
-        GROUPING(is_forbearance)        AS g_is_forbearance,
-        GROUPING(ever_modified)         AS g_ever_modified,
-        GROUPING(ever_deferred)         AS g_ever_deferred,
+        credit_score, orig_ltv, orig_dti, sato, num_borrowers, delinq_history,
+        loan_purpose, channel, property_state,
+        -- GROUPING(x) = 0: row belongs to the grouping by x (separates "missing value" NULL from "other set" NULL)
+        GROUPING(credit_score)    AS g_credit_score,
+        GROUPING(orig_ltv)        AS g_orig_ltv,
+        GROUPING(orig_dti)        AS g_orig_dti,
+        GROUPING(sato)            AS g_sato,
+        GROUPING(num_borrowers)   AS g_num_borrowers,
+        GROUPING(delinq_history)  AS g_delinq_history,
+        GROUPING(loan_purpose)    AS g_loan_purpose,
+        GROUPING(channel)         AS g_channel,
+        GROUPING(property_state)  AS g_property_state,
         count(*) FILTER (WHERE NOT target) AS goods,
         count(*) FILTER (WHERE target)     AS bads
     FROM base
     GROUP BY GROUPING SETS (
-        (credit_score), (orig_ltv), (current_ltv), (orig_dti), (sato), (months_on_books),
-        (delinq_history), (ead_k), (num_borrowers),
-        (occupancy_status), (loan_purpose), (channel), (property_state),
-        (first_time_homebuyer), (is_forbearance), (ever_modified), (ever_deferred)
+        (credit_score), (orig_ltv), (orig_dti), (sato), (num_borrowers), (delinq_history),
+        (loan_purpose), (channel), (property_state)
     )
 )
 SELECT v.feature, v.num_val, v.cat_val, a.goods, a.bads
 FROM agg a
 CROSS JOIN LATERAL (VALUES
-    ('credit_score',          a.g_credit_score,          a.credit_score::numeric,          NULL::text),
-    ('orig_ltv',              a.g_orig_ltv,              a.orig_ltv::numeric,              NULL),
-    ('orig_dti',              a.g_orig_dti,              a.orig_dti::numeric,              NULL),
-    ('sato',                  a.g_sato,                  a.sato,                           NULL),
-    ('delinq_history',        a.delinq_history,          a.delinq_history,                 NULL),
-    ('ead',                   a.g_ead,                   a.ead_k,                          NULL),
-    ('num_borrowers',         a.g_num_borrowers,         a.num_borrowers::numeric,         NULL),
-    ('occupancy_status',      a.g_occupancy_status,      NULL, a.occupancy_status),
-    ('loan_purpose',          a.g_loan_purpose,          NULL, a.loan_purpose),
-    ('channel',               a.g_channel,               NULL, a.channel),
-    ('property_state',        a.g_property_state,        NULL, a.property_state),
-    ('first_time_homebuyer',  a.g_first_time_homebuyer,  NULL, a.first_time_homebuyer::text),
-    ('is_forbearance',        a.g_is_forbearance,        NULL, a.is_forbearance::text),
-    ('ever_modified',         a.g_ever_modified,         NULL, a.ever_modified::text),
-    ('ever_deferred',         a.g_ever_deferred,         NULL, a.ever_deferred::text)
+    ('credit_score',   a.g_credit_score,   a.credit_score::numeric,   NULL::text),
+    ('orig_ltv',       a.g_orig_ltv,       a.orig_ltv::numeric,       NULL),
+    ('orig_dti',       a.g_orig_dti,       a.orig_dti::numeric,       NULL),
+    ('sato',           a.g_sato,           a.sato,                    NULL),
+    ('num_borrowers',  a.g_num_borrowers,  a.num_borrowers::numeric,  NULL),
+    ('delinq_history', a.g_delinq_history, a.delinq_history::numeric, NULL),
+    ('loan_purpose',   a.g_loan_purpose,   NULL, a.loan_purpose),
+    ('channel',        a.g_channel,        NULL, a.channel),
+    ('property_state', a.g_property_state, NULL, a.property_state)
 ) AS v(feature, g, num_val, cat_val)
 WHERE v.g = 0;
 
