@@ -47,6 +47,12 @@ SELECT
     lm.max_delinq_12m,
     (extract(year  FROM age(lm.period, lm.last_delinq_period)) * 12
    + extract(month FROM age(lm.period, lm.last_delinq_period)))::int AS months_since_last_del,
+
+    (extract(year  FROM age(lm.period, lm.last_90_period)) * 12
+   + extract(month FROM age(lm.period, lm.last_90_period)))::int AS months_since_last_90,
+
+    (extract(year  FROM age(lm.period, lm.last_mod)) * 12
+   + extract(month FROM age(lm.period, lm.last_mod)))::int AS months_since_last_90,
     lm.is_forbearance,
     lm.ever_modified,
     lm.ever_deferred,

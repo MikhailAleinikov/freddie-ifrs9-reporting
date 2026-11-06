@@ -20,6 +20,13 @@ SELECT
     MAX(CASE WHEN p.delinquency_months >= 1 THEN p.period END)
       OVER (w ROWS UNBOUNDED PRECEDING)                     AS last_delinq_period,
 
+      -- most recent month at 90+ DPD, up to now
+    MAX(CASE WHEN p.delinquency_months >= 3 THEN p.period END)
+      OVER (w ROWS UNBOUNDED PRECEDING)                     AS last_90_period,
+
+    MAX(CASE WHEN p.modification_flag = 'Y' THEN p.period END)
+      OVER (w ROWS UNBOUNDED PRECEDING)                     AS last_mod,
+
     BOOL_OR(p.modification_flag IN ('Y','P'))
       OVER (w ROWS UNBOUNDED PRECEDING)                     AS ever_modified,
     BOOL_OR(p.payment_deferral_flag IN ('C','P'))
