@@ -36,19 +36,14 @@ INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_mis
 ('credit_score', 6, '780+',     780,  NULL, NULL, false),
 
 -- 80 = mortgage insurance threshold
-('orig_ltv', 0, 'missing', NULL, NULL, NULL, true),
 ('orig_ltv', 1, '<=60',    NULL, 61,   NULL, false),
-('orig_ltv', 2, '61-70',   61,   71,   NULL, false),
-('orig_ltv', 3, '71-80',   71,   81,   NULL, false),
-('orig_ltv', 4, '81-90',   81,   91,   NULL, false),
-('orig_ltv', 5, '91-95',   91,   96,   NULL, false),
+('orig_ltv', 2, '61-80 and missing',   61,   81,   NULL, true),
+('orig_ltv', 4, '81-95',   81,   96,   NULL, false),
 ('orig_ltv', 6, '>95',     96,   NULL, NULL, false),
 
 -- 36 / 43 = standard underwriting limits; missing includes HARP / relief refis
-('orig_dti', 0, 'missing', NULL, NULL, NULL, true),
-('orig_dti', 1, '<20',     NULL, 20,   NULL, false),
-('orig_dti', 2, '20-29',   20,   30,   NULL, false),
-('orig_dti', 3, '30-36',   30,   37,   NULL, false),
+('orig_dti', 1, '<30',     NULL, 30,   NULL, false),
+('orig_dti', 3, '30-36 and missing',   30,   37,   NULL, true),
 ('orig_dti', 4, '37-43',   37,   44,   NULL, false),
 ('orig_dti', 5, '44-50',   44,   51,   NULL, false),
 ('orig_dti', 6, '>50',     51,   NULL, NULL, false),
@@ -61,49 +56,17 @@ INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_mis
 ('sato', 4, '0.25 to 0.5',  0.25,  0.5,   NULL, false),
 ('sato', 5, '0.5+',         0.5,   NULL,  NULL, false),
 
-('num_borrowers', 0, 'missing', NULL, NULL, NULL, true),
+
 ('num_borrowers', 1, '1',       NULL, 2,    NULL, false),
-('num_borrowers', 2, '2+',      2,    NULL, NULL, false),
+('num_borrowers', 2, '2+ or missing',      2,    NULL, NULL, true),
 
--- ===== behavioural: numeric =====
--- >= 100 = underwater, the strongest default driver in 2008
-('current_ltv', 0, 'missing', NULL, NULL, NULL, true),
-('current_ltv', 1, '<50',     NULL, 50,   NULL, false),
-('current_ltv', 2, '50-69',   50,   70,   NULL, false),
-('current_ltv', 3, '70-79',   70,   80,   NULL, false),
-('current_ltv', 4, '80-89',   80,   90,   NULL, false),
-('current_ltv', 5, '90-99',   90,   100,  NULL, false),
-('current_ltv', 6, '100+',    100,  NULL, NULL, false),
 
--- defaults peak in years 2-4; missing = 1 loan with first_payment_date after a modification
-('months_on_books', 0, 'missing', NULL, NULL, NULL, true),
-('months_on_books', 1, '0-6',     NULL, 7,    NULL, false),
-('months_on_books', 2, '7-12',    7,    13,   NULL, false),
-('months_on_books', 3, '13-24',   13,   25,   NULL, false),
-('months_on_books', 4, '25-36',   25,   37,   NULL, false),
-('months_on_books', 5, '37-60',   37,   61,   NULL, false),
-('months_on_books', 6, '61+',     61,   NULL, NULL, false),
 
--- max is 2 in the PD sample: 3+ means already defaulted (filtered out)
-('max_delinq_12m', 0, 'missing',  NULL, NULL, NULL, true),
-('max_delinq_12m', 1, '0',        NULL, 1,    NULL, false),
-('max_delinq_12m', 2, '1 (30d)',  1,    2,    NULL, false),
-('max_delinq_12m', 3, '2 (60d)',  2,    NULL, NULL, false),
-
--- NULL = never delinquent -> expected safest bin; 0 = delinquent this month
-('months_since_last_del', 0, 'never', NULL, NULL, NULL, true),
-('months_since_last_del', 1, '0-3',   NULL, 4,    NULL, false),
-('months_since_last_del', 2, '4-12',  4,    13,   NULL, false),
-('months_since_last_del', 3, '13-24', 13,   25,   NULL, false),
-('months_since_last_del', 4, '25+',   25,   NULL, NULL, false),
-
--- ===== categorical =====
--- 90+ cannot appear in the PD sample. Labels must match core.loan_month exactly:
---   SELECT DISTINCT dpd_bucket FROM mart.pd_sample;
-('dpd_bucket', 0, 'missing', NULL, NULL, NULL,      true),
-('dpd_bucket', 1, '0-29',    NULL, NULL, '{0-29}',  false),
-('dpd_bucket', 2, '30-59',   NULL, NULL, '{30-59}', false),
-('dpd_bucket', 3, '60-89',   NULL, NULL, '{60-89}', false),
+('delinq_history', 0, 'never',            NULL, 1,    NULL, true),
+('delinq_history', 1, 'last late 25m+',   1,    2,    NULL, false),
+('delinq_history', 2, 'last late 13-24m', 2,    3,    NULL, false),
+('delinq_history', 3, 'worst 30d in 12m', 3,    4,    NULL, false),
+('delinq_history', 4, 'worst 60d in 12m', 4,    NULL, NULL, false),
 
 -- P = primary, I = investment, S = second home (merge I+S if S is tiny)
 ('occupancy_status', 0, 'missing', NULL, NULL, NULL,  true),
@@ -140,22 +103,20 @@ INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_mis
 
 ('ever_deferred', 0, 'missing', NULL, NULL, NULL,      true),
 ('ever_deferred', 1, 'no',      NULL, NULL, '{false}', false),
-('ever_deferred', 2, 'yes',     NULL, NULL, '{true}',  false);
+('ever_deferred', 2, 'yes',     NULL, NULL, '{true}',  false),
 
--- ===== property_state: fine classing, one bin per state =====
--- After the first binning run, replace this block with 4-6 hand-written groups by default rate,
--- e.g. ('property_state', 1, 'high risk', NULL, NULL, '{FL,NV,AZ,CA}', false)
-INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_missing)
-VALUES ('property_state', 0, 'missing', NULL, NULL, NULL, true);
+('property_state', 0, 'risk group 1', NULL, NULL,
+    '{FL,NV,AZ,GA,NJ,CA,MD,IL,CT,MI,RI}', false),
+('property_state', 1, 'risk group 2', NULL, NULL,
+    '{MS,PR,ID,NH,ME,DC,GU,VI,NM,AL,NY}', false),
+('property_state', 2, 'risk group 3', NULL, NULL,
+    '{HI, DE, MA, LA, WV, WY, MO, OR, ND, WA, SD}', false),
+('property_state', 3, 'risk group 4', NULL, NULL,
+    '{MN, UT, OH, VA, TN, WI, NE, MT, SC, AK,AR}', false),
+('property_state', 4, 'risk group 5', NULL, NULL,
+    '{VT,PA,KS,NC,OK,IN,IA,KY,CO,TX}', false);
 
-INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_missing)
-SELECT 'property_state',
-       row_number() OVER (ORDER BY property_state),
-       property_state,
-       NULL, NULL,
-       ARRAY[property_state],
-       false
-FROM (SELECT DISTINCT property_state FROM core.orig WHERE property_state IS NOT NULL) s;
+
 
 -- ===== ead: quintiles of TRAIN, rounded to 1,000 (32_binning rounds ead to ead_k) =====
 -- After the first run, freeze: replace this block with the printed cut points as literal INSERTs.

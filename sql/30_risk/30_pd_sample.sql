@@ -35,6 +35,13 @@ SELECT
     s.max_delinq_12m,
     s.months_since_last_del,
     s.months_since_last_90,
+    CASE
+        WHEN s.max_delinq_12m >= 2             THEN 4
+        WHEN s.max_delinq_12m  = 1             THEN 3
+        WHEN s.months_since_last_del IS NULL   THEN 0
+        WHEN s.months_since_last_del >= 25     THEN 1
+        ELSE                                        2
+    END                         AS delinq_history,
     s.is_forbearance,
     s.ever_modified,
     s.ever_deferred,
