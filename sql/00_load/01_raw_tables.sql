@@ -5,7 +5,7 @@
 --   origination = 31 columns, performance = 35 columns.
 -- Run:  psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/00_load/01_raw_tables.sql
 
-DROP TABLE IF EXISTS raw.orig;
+DROP TABLE IF EXISTS raw.orig CASCADE;
 CREATE TABLE raw.orig (
     credit_score          TEXT,  -- 1  Classic FICO (9999 = NA)
     first_payment_date    TEXT,  -- 2  YYYYMM
@@ -40,7 +40,7 @@ CREATE TABLE raw.orig (
     vantagescore4         TEXT   -- 31 9999 = NA
 );
 
-DROP TABLE IF EXISTS raw.perf;
+DROP TABLE IF EXISTS raw.perf CASCADE;
 CREATE TABLE raw.perf (
     loan_seq_no                 TEXT,  -- 1  join key
     period                      TEXT,  -- 2  YYYYMM

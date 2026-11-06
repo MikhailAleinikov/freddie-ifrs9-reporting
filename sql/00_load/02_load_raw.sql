@@ -20,6 +20,30 @@ TRUNCATE raw.perf;
 \copy raw.orig FROM 'data/raw/sample_2008/sample_orig_2008.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
 \copy raw.perf FROM 'data/raw/sample_2008/sample_perf_2008.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
 
+-- 2016
+\copy raw.orig FROM 'data/raw/sample_2016/sample_orig_2016.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+\copy raw.perf FROM 'data/raw/sample_2016/sample_perf_2016.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+
+-- 2017
+\copy raw.orig FROM 'data/raw/sample_2017/sample_orig_2017.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+\copy raw.perf FROM 'data/raw/sample_2017/sample_perf_2017.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+
+-- 2018
+\copy raw.orig FROM 'data/raw/sample_2018/sample_orig_2018.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+\copy raw.perf FROM 'data/raw/sample_2018/sample_perf_2018.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+
+-- 2019
+\copy raw.orig FROM 'data/raw/sample_2019/sample_orig_2019.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+\copy raw.perf FROM 'data/raw/sample_2019/sample_perf_2019.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+
+-- 2020
+\copy raw.orig FROM 'data/raw/sample_2020/sample_orig_2020.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+\copy raw.perf FROM 'data/raw/sample_2020/sample_perf_2020.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+
+-- 2021
+\copy raw.orig FROM 'data/raw/sample_2021/sample_orig_2021.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+\copy raw.perf FROM 'data/raw/sample_2021/sample_perf_2021.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
+
 -- 2022
 \copy raw.orig FROM 'data/raw/sample_2022/sample_orig_2022.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
 \copy raw.perf FROM 'data/raw/sample_2022/sample_perf_2022.txt' WITH (FORMAT csv, DELIMITER '|', QUOTE E'\b')
