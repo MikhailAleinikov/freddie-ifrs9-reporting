@@ -26,12 +26,12 @@ SELECT
       OVER (w ROWS UNBOUNDED PRECEDING)                     AS ever_deferred,
 
   -- current LTV: ELTV if available, otherwise recomputed
-    COALESCE(p.eltv,
+        COALESCE(p.eltv,
            round(p.current_upb * o.orig_ltv / NULLIF(o.orig_upb, 0)))
-                                                            AS current_ltv,
-    BOOL_OR(p.is_defect) OVER (PARTITION BY p.loan_seq_no) AS loan_has_defect
+                                                            AS current_ltv
+    FROM core.perf p
+    JOIN core.orig o USING (loan_seq_no)
+    WINDOW w AS (PARTITION BY loan_seq_no ORDER BY period);
 
-
-FROM core.perf p
-JOIN core.orig o USING (loan_seq_no)
-WINDOW w AS (PARTITION BY loan_seq_no ORDER BY period);
+ALTER TABLE core.loan_month ADD PRIMARY KEY (loan_seq_no, period);
+ANALYZE core.loan_month;
