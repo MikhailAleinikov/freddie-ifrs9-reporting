@@ -68,23 +68,10 @@ INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_mis
 ('delinq_history', 3, 'worst 30d in 12m', 3,    4,    NULL, false),
 ('delinq_history', 4, 'worst 60d in 12m', 4,    NULL, NULL, false),
 
--- ===== categorical =====
--- P = purchase, C = cash-out refi, N = no cash-out refi, R = unspecified refi (merged with N)
-('loan_purpose', 0, 'missing',            NULL, NULL, NULL,    true),
-('loan_purpose', 1, 'P',                  NULL, NULL, '{P}',   false),
-('loan_purpose', 2, 'C',                  NULL, NULL, '{C}',   false),
-('loan_purpose', 3, 'N+R',                NULL, NULL, '{N,R}', false),
+-- cash-out vs no cash-out; P vs N/R ordering is rate-environment dependent (flips TRAIN -> OOT)
+('loan_purpose', 1, 'no cash-out (P, N, R) or missing', NULL, NULL, '{P,N,R}', true),
+('loan_purpose', 2, 'cash-out (C)',                     NULL, NULL, '{C}',     false);
 
--- B+T: broker / TPO not specified (T only exists pre-2009); R+C: retail / correspondent
-('channel', 1, 'retail/correspondent or missing', NULL, NULL, '{R,C}', true),
-('channel', 2, 'broker/TPO unspecified',          NULL, NULL, '{B,T}', false),
-
--- tiers by shrunk TRAIN default rate, 1 = riskiest; NULL state assigned to the middle tier
-('property_state', 1, 'risk group 1', NULL, NULL, '{FL,NV,AZ,GA,NJ,CA,MD,IL,CT,MI,RI}', false),
-('property_state', 2, 'risk group 2', NULL, NULL, '{MS,PR,ID,NH,ME,DC,GU,VI,NM,AL,NY}', false),
-('property_state', 3, 'risk group 3', NULL, NULL, '{HI,DE,MA,LA,WV,WY,MO,OR,ND,WA,SD}', true),
-('property_state', 4, 'risk group 4', NULL, NULL, '{MN,UT,OH,VA,TN,WI,NE,MT,SC,AK,AR}', false),
-('property_state', 5, 'risk group 5', NULL, NULL, '{VT,PA,KS,NC,OK,IN,IA,KY,CO,TX}',    false);
 
 ANALYZE mart.bin_def;
 

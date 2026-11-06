@@ -3,7 +3,7 @@
 -- Bin cut points come from mart.bin_def (hand-maintained decisions); this file only computes results.
 -- Method: aggregate first (one scan with GROUPING SETS -> per-value counts), bin second (small join).
 -- Scorecard candidates: credit_score, orig_ltv, orig_dti, sato, num_borrowers, delinq_history,
---                       loan_purpose, channel, property_state
+--                       loan_purpose,
 -- Excluded (reasons in docs/assumptions.md): vintage, orig_interest_rate (-> sato), current_ltv,
 --   months_on_books, dpd_bucket, max_delinq_12m, months_since_last_del (-> delinq_history), ead,
 --   occupancy_status, first_time_homebuyer, is_forbearance, ever_modified, ever_deferred
@@ -24,8 +24,6 @@ WITH base AS (
            ps.num_borrowers,
            ps.delinq_history,
            ps.loan_purpose,
-           ps.channel,
-           ps.property_state,
            ps.target
     FROM mart.pd_sample ps
     WHERE ps.sample_split = 'TRAIN'
@@ -33,7 +31,7 @@ WITH base AS (
 agg AS (
     SELECT
         credit_score, orig_ltv, orig_dti, sato, num_borrowers, delinq_history,
-        loan_purpose, channel, property_state,
+        loan_purpose,
         -- GROUPING(x) = 0: row belongs to the grouping by x (separates "missing value" NULL from "other set" NULL)
         GROUPING(credit_score)    AS g_credit_score,
         GROUPING(orig_ltv)        AS g_orig_ltv,
@@ -42,14 +40,12 @@ agg AS (
         GROUPING(num_borrowers)   AS g_num_borrowers,
         GROUPING(delinq_history)  AS g_delinq_history,
         GROUPING(loan_purpose)    AS g_loan_purpose,
-        GROUPING(channel)         AS g_channel,
-        GROUPING(property_state)  AS g_property_state,
         count(*) FILTER (WHERE NOT target) AS goods,
         count(*) FILTER (WHERE target)     AS bads
     FROM base
     GROUP BY GROUPING SETS (
         (credit_score), (orig_ltv), (orig_dti), (sato), (num_borrowers), (delinq_history),
-        (loan_purpose), (channel), (property_state)
+        (loan_purpose)
     )
 )
 SELECT v.feature, v.num_val, v.cat_val, a.goods, a.bads
@@ -61,9 +57,7 @@ CROSS JOIN LATERAL (VALUES
     ('sato',           a.g_sato,           a.sato,                    NULL),
     ('num_borrowers',  a.g_num_borrowers,  a.num_borrowers::numeric,  NULL),
     ('delinq_history', a.g_delinq_history, a.delinq_history::numeric, NULL),
-    ('loan_purpose',   a.g_loan_purpose,   NULL, a.loan_purpose),
-    ('channel',        a.g_channel,        NULL, a.channel),
-    ('property_state', a.g_property_state, NULL, a.property_state)
+    ('loan_purpose',   a.g_loan_purpose,   NULL, a.loan_purpose)
 ) AS v(feature, g, num_val, cat_val)
 WHERE v.g = 0;
 

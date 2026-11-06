@@ -23,7 +23,7 @@ WITH agg AS (
     SELECT
         sample_split,
         credit_score, orig_ltv, orig_dti, sato, num_borrowers, delinq_history,
-        loan_purpose, channel, property_state,
+        loan_purpose,
         GROUPING(credit_score)    AS g_credit_score,
         GROUPING(orig_ltv)        AS g_orig_ltv,
         GROUPING(orig_dti)        AS g_orig_dti,
@@ -31,15 +31,13 @@ WITH agg AS (
         GROUPING(num_borrowers)   AS g_num_borrowers,
         GROUPING(delinq_history)  AS g_delinq_history,
         GROUPING(loan_purpose)    AS g_loan_purpose,
-        GROUPING(channel)         AS g_channel,
-        GROUPING(property_state)  AS g_property_state,
         count(*) FILTER (WHERE NOT target) AS goods,
         count(*) FILTER (WHERE target)     AS bads
     FROM mart.pd_sample
     GROUP BY GROUPING SETS (
         (sample_split, credit_score),   (sample_split, orig_ltv),       (sample_split, orig_dti),
         (sample_split, sato),           (sample_split, num_borrowers),  (sample_split, delinq_history),
-        (sample_split, loan_purpose),   (sample_split, channel),        (sample_split, property_state)
+        (sample_split, loan_purpose)
     )
 )
 SELECT a.sample_split, v.feature, v.num_val, v.cat_val, a.goods, a.bads
@@ -51,9 +49,7 @@ CROSS JOIN LATERAL (VALUES
     ('sato',           a.g_sato,           a.sato,                    NULL),
     ('num_borrowers',  a.g_num_borrowers,  a.num_borrowers::numeric,  NULL),
     ('delinq_history', a.g_delinq_history, a.delinq_history::numeric, NULL),
-    ('loan_purpose',   a.g_loan_purpose,   NULL, a.loan_purpose),
-    ('channel',        a.g_channel,        NULL, a.channel),
-    ('property_state', a.g_property_state, NULL, a.property_state)
+    ('loan_purpose',   a.g_loan_purpose,   NULL, a.loan_purpose)
 ) AS v(feature, g, num_val, cat_val)
 WHERE v.g = 0;
 
