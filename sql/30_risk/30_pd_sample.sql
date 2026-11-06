@@ -1,11 +1,11 @@
--- 31_pd_sample.sql
+-- 30_pd_sample.sql
 -- Development sample for the PD scorecard: performing loans with a full 12-month outcome window.
 --   TRAIN / TEST : snapshots before 2019 (outcome windows end before COVID); 30% of LOANS held out as TEST
 --   COVID        : snapshots 2019Q1-2021Q4 (windows overlap forbearance) -> stress test only
 --   OOT          : snapshots from 2022Q1 -> out-of-time validation
 -- Holdout uses md5 of loan_seq_no: deterministic, version-independent, same loan never in both TRAIN and TEST.
 -- Run from the repo root:
---   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/30_risk/31_pd_sample.sql
+--   psql -h localhost -U mikhail -d freddie -v ON_ERROR_STOP=1 -f sql/30_risk/30_pd_sample.sql
 
 DROP TABLE IF EXISTS mart.pd_sample CASCADE;
 
