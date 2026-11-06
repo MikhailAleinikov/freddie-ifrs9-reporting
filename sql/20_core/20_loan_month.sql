@@ -27,10 +27,10 @@ SELECT
     MAX(CASE WHEN p.modification_flag = 'Y' THEN p.period END)
       OVER (w ROWS UNBOUNDED PRECEDING)                     AS last_mod,
 
-    BOOL_OR(p.modification_flag IN ('Y','P'))
-      OVER (w ROWS UNBOUNDED PRECEDING)                     AS ever_modified,
-    BOOL_OR(p.payment_deferral_flag IN ('C','P'))
-      OVER (w ROWS UNBOUNDED PRECEDING)                     AS ever_deferred,
+    COALESCE(BOOL_OR(p.modification_flag IN ('Y','P'))
+      OVER (w ROWS UNBOUNDED PRECEDING), false)             AS ever_modified,
+    COALESCE(BOOL_OR(p.payment_deferral_flag IN ('C','P'))
+      OVER (w ROWS UNBOUNDED PRECEDING), false)             AS ever_deferred,
 
   -- current LTV: ELTV if available, otherwise recomputed
         COALESCE(p.eltv,
