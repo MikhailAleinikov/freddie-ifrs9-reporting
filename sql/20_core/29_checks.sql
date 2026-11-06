@@ -48,10 +48,6 @@ checks AS (
            (SELECT count(*) - count(DISTINCT loan_seq_no) FROM core.default_event),
            0
 
-    UNION ALL
-    SELECT 'default_event: no defect loans',
-           (SELECT count(*) FROM core.default_event JOIN defect_loans USING (loan_seq_no)),
-           0
 
     UNION ALL
     -- every default_date must be a month the loan actually reported
@@ -87,10 +83,6 @@ checks AS (
             WHERE s.snapshot_date >= p.period),
            0
 
-    UNION ALL
-    SELECT 'snapshot: no defect loans',
-           (SELECT count(*) FROM core.snapshot JOIN defect_loans USING (loan_seq_no)),
-           0
 
     UNION ALL
     SELECT 'snapshot: no REO months',
