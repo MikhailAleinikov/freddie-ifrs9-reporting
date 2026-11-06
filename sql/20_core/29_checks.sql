@@ -117,6 +117,18 @@ checks AS (
            4
 
     UNION ALL
+    -- defect loans stay in PD data; excluded from LGD in Phase 4
+    SELECT 'default_event: defaults on defect loans',
+           (SELECT count(*) FROM core.default_event WHERE loan_has_defect),
+           NULL
+
+    UNION ALL
+    SELECT 'default_event: ead_at_default missing or <= 0',
+           (SELECT count(*) FROM core.default_event
+            WHERE ead_at_default IS NULL OR ead_at_default <= 0),
+           NULL
+
+    UNION ALL
     -- negative = snapshot before first payment date (loan acquired early); a few are fine
     SELECT 'snapshot: rows with months_on_books < 0',
            (SELECT count(*) FROM core.snapshot WHERE months_on_books < 0),
