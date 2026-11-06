@@ -118,12 +118,12 @@ WITH b AS (
     FROM binning_long l
     JOIN mart.bin_def d
       ON d.feature = l.feature
-     AND CASE
-           WHEN d.is_missing             THEN l.num_val IS NULL AND l.cat_val IS NULL
-           WHEN d.cat_values IS NOT NULL THEN l.cat_val = ANY (d.cat_values)
-           ELSE l.num_val IS NOT NULL
-            AND (d.lo IS NULL OR l.num_val >= d.lo)
-            AND (d.hi IS NULL OR l.num_val <  d.hi)
+          AND CASE
+           WHEN l.num_val IS NULL AND l.cat_val IS NULL THEN d.is_missing
+           WHEN d.cat_values IS NOT NULL                THEN l.cat_val = ANY (d.cat_values)
+           WHEN d.lo IS NOT NULL OR d.hi IS NOT NULL    THEN (d.lo IS NULL OR l.num_val >= d.lo)
+                                                         AND (d.hi IS NULL OR l.num_val <  d.hi)
+           ELSE false
          END
     GROUP BY d.feature, d.bin_id, d.bin_label, is_numeric_bin
 ),
@@ -190,13 +190,13 @@ SELECT l.feature, sum(l.goods + l.bads) AS unmatched_rows
 FROM binning_long l
 LEFT JOIN mart.bin_def d
   ON d.feature = l.feature
- AND CASE
-       WHEN d.is_missing             THEN l.num_val IS NULL AND l.cat_val IS NULL
-       WHEN d.cat_values IS NOT NULL THEN l.cat_val = ANY (d.cat_values)
-       ELSE l.num_val IS NOT NULL
-        AND (d.lo IS NULL OR l.num_val >= d.lo)
-        AND (d.hi IS NULL OR l.num_val <  d.hi)
-     END
+      AND CASE
+           WHEN l.num_val IS NULL AND l.cat_val IS NULL THEN d.is_missing
+           WHEN d.cat_values IS NOT NULL                THEN l.cat_val = ANY (d.cat_values)
+           WHEN d.lo IS NOT NULL OR d.hi IS NOT NULL    THEN (d.lo IS NULL OR l.num_val >= d.lo)
+                                                         AND (d.hi IS NULL OR l.num_val <  d.hi)
+           ELSE false
+         END
 WHERE d.feature IS NULL
 GROUP BY l.feature;
 
