@@ -75,12 +75,9 @@ INSERT INTO mart.bin_def (feature, bin_id, bin_label, lo, hi, cat_values, is_mis
 ('loan_purpose', 2, 'C',                  NULL, NULL, '{C}',   false),
 ('loan_purpose', 3, 'N+R',                NULL, NULL, '{N,R}', false),
 
--- R = retail, B = broker, C = correspondent, T = TPO not specified  (coarse classing pending)
-('channel', 0, 'missing',                 NULL, NULL, NULL,  true),
-('channel', 1, 'R',                       NULL, NULL, '{R}', false),
-('channel', 2, 'B',                       NULL, NULL, '{B}', false),
-('channel', 3, 'C',                       NULL, NULL, '{C}', false),
-('channel', 4, 'T',                       NULL, NULL, '{T}', false),
+-- B+T: broker / TPO not specified (T only exists pre-2009); R+C: retail / correspondent
+('channel', 1, 'retail/correspondent or missing', NULL, NULL, '{R,C}', true),
+('channel', 2, 'broker/TPO unspecified',          NULL, NULL, '{B,T}', false),
 
 -- tiers by shrunk TRAIN default rate, 1 = riskiest; NULL state assigned to the middle tier
 ('property_state', 1, 'risk group 1', NULL, NULL, '{FL,NV,AZ,GA,NJ,CA,MD,IL,CT,MI,RI}', false),
