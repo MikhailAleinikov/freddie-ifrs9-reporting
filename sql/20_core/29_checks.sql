@@ -39,7 +39,7 @@ checks AS (
                 HAVING count(*) <> (extract(year  FROM age(max(period), min(period))) * 12
                                   + extract(month FROM age(max(period), min(period))))::int + 1
            ) g),
-           76
+           77
 
     -- default_event ------------------------------------------------------
 
