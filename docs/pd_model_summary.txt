@@ -1,0 +1,33 @@
+PD scorecard: logistic regression on TRAIN WoE features
+Standard errors cluster-robust by loan (repeated snapshots of the same loan).
+
+                           Results: Logit
+====================================================================
+Model:                Logit            Method:           MLE        
+Dependent Variable:   target           Pseudo R-squared: 0.223      
+Date:                 2026-11-07 16:24 AIC:              406324.9587
+No. Observations:     2264990          BIC:              406426.0234
+Df Model:             7                Log-Likelihood:   -2.0315e+05
+Df Residuals:         2264982          LL-Null:          -2.6147e+05
+Converged:            1.0000           LLR p-value:      0.0000     
+No. Iterations:       9.0000           Scale:            1.0000     
+--------------------------------------------------------------------
+                    Coef.  Std.Err.     z     P>|z|   [0.025  0.975]
+--------------------------------------------------------------------
+const              -3.6777   0.0097 -380.5211 0.0000 -3.6967 -3.6588
+woe_credit_score   -0.4830   0.0142  -34.1175 0.0000 -0.5107 -0.4552
+woe_orig_ltv       -0.8587   0.0302  -28.4294 0.0000 -0.9179 -0.7995
+woe_orig_dti       -0.6594   0.0248  -26.5893 0.0000 -0.7080 -0.6108
+woe_sato           -0.3369   0.0284  -11.8631 0.0000 -0.3925 -0.2812
+woe_num_borrowers  -0.7339   0.0436  -16.8457 0.0000 -0.8193 -0.6485
+woe_delinq_history -0.8841   0.0055 -161.6277 0.0000 -0.8949 -0.8734
+woe_loan_purpose   -0.8055   0.0540  -14.9286 0.0000 -0.9113 -0.6998
+====================================================================
+
+
+Validation (mean_pd uses the uncalibrated model; calibration happens in 35_pd_score.sql):
+sample_split       n  defaults  default_rate  mean_pd    auc   gini     ks
+       TRAIN 2264990     55719        0.0246   0.0246 0.8412 0.6824 0.5142
+        TEST  965675     23971        0.0248   0.0243 0.8384 0.6767 0.5074
+       COVID 1893733     38079        0.0201   0.0172 0.7708 0.5417 0.3904
+         OOT 3070600     21071        0.0069   0.0156 0.8566 0.7133 0.5418
