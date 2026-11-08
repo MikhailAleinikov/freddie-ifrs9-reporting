@@ -35,6 +35,7 @@ raw  ──►  core (staging)  ──►  core (loan history)  ──►  risk 
 | Model | `python/fit_pd_model.py` | Logistic regression, validation, coefficients back to the database |
 | Reporting | `40_reporting/40` | Stage summary, stage migration, F 18-style NPE table, master scale, vintage curves |
 | Charts | `python/make_charts.py` | `docs/img/*.png` |
+| Tableau export | `40_reporting/41`, `python/export_tableau.py` | ECL cube; all reporting marts as CSV in `exports/tableau/` |
 
 `./run_pipeline.sh` rebuilds everything in dependency order. Every SQL script is idempotent and runs in one transaction.
 
@@ -125,10 +126,12 @@ sql/
   10_staging/              typed core.orig, core.perf
   20_core/                 loan history, default events, snapshots, checks
   30_risk/                 PD sample, bins, stability, WoE, scoring, staging, LGD, ECL
-  40_reporting/            reporting marts
+  40_reporting/            reporting marts, ECL cube
 python/
   fit_pd_model.py          scorecard fit and validation
   make_charts.py           charts for this README
+  export_tableau.py        reporting marts to CSV for Tableau
+exports/tableau/           Tableau data sources (aggregates only)
 docs/
   assumptions.md           methodological decisions and evidence
   pd_model_summary.txt     regression output and validation

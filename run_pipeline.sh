@@ -52,5 +52,6 @@ run_py  python/fit_pd_model.py                 # logistic regression -> mart.pd_
 run_sql sql/30_risk/3[5-9]_*.sql               # scores and master scale, staging, LGD, ECL
 run_sql sql/40_reporting/*.sql                 # reporting marts
 run_py  python/make_charts.py                  # docs/img/*.png
+run_py  python/export_tableau.py               # exports/tableau/*.csv
 
 echo "== pipeline finished in $(((SECONDS - START) / 60))m $(((SECONDS - START) % 60))s; per-step output in logs/"
