@@ -4,6 +4,10 @@ End-to-end IFRS 9 expected credit loss (ECL) pipeline in **PostgreSQL** and **Py
 
 Raw monthly loan performance is turned into a CRR-compliant default definition, a behavioural **PD scorecard** (WoE logistic regression), a point-in-time **master scale**, rule-based **IFRS 9 staging**, workout-based **LGD**, lifetime **ECL**, and FINREP-style reports.
 
+The exported data was used to build Tableau dashboards for ECL results and the FINREP F18 template.
+They are accessible under
+https://public.tableau.com/views/IFRS9ECLFINREPreportingFreddieMacmortgages/Modelregulatory?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link
+
 ## Key results (reporting date 30 June 2026)
 
 | | Stage 1 | Stage 2 | Stage 3 | Total |
